@@ -14,6 +14,7 @@ class Noise:
         self.seed = seed
         self.map = None
         self.units = []
+        self.markers = []
 
     def map_gen(self):
         topo_map = np.zeros((self.height, self.width))
@@ -32,6 +33,9 @@ class Noise:
         topo_map = (topo_map - np.min(topo_map)) / (np.max(topo_map) - np.min(topo_map))
         self.map = topo_map
 
+    def add_marker(self, x, y, label):
+        self.markers.append((x, y, label))
+
     def add_unit(self, unit):
         self.units.append(unit)
 
@@ -46,6 +50,10 @@ class Noise:
             for j in range(self.height):
                 color = f'#{int(self.map[i][j] * 255):02x}{int(self.map[i][j] * 255):02x}{int(self.map[i][j] * 255):02x}'
                 canvas.create_rectangle(i, j, i+1, j+1, fill=color, outline = "")
+            
+            for marker in self.markers:
+                x, y, label = marker
+                canvas.create_text(x, y, text=label, fill="white", font=("Helvetica", 12))
 
             for unit in self.units:
                 x, y, color = unit.x, unit.y, unit.color
@@ -89,6 +97,7 @@ print(b.hp)
 c.map_gen()
 c.add_unit(a)
 c.add_unit(b)
+c.add_marker(250, 200, "Base")
 update_display()
 root.mainloop()
 
