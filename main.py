@@ -1,7 +1,10 @@
 import tkinter as tk
 import numpy as np
-import noise
 import matplotlib.pyplot as plt
+import noise
+import random
+
+terrain_types = ['forest', 'desert', 'mountain', 'water']
 
 class Noise:
     def __init__(self, width, height, scale, octaves, persistence, lacunarity, seed):
@@ -59,6 +62,26 @@ class Noise:
                 x, y, color = unit.x, unit.y, unit.color
                 canvas.create_rectangle(x - 10, y - 5, x + 10, y + 5, fill=color, outline = "")
 
+class Army:
+    def __init__(self, x, y, name, troops = None):
+        self.x = x
+        self.y = y
+        self.name = name
+        self.troops = troops or []
+        self.location = None
+        self.fighting_style = None
+        self.size = len(troops)
+
+    def move(self, new_x, new_y):
+        self.x = new_x
+        self.y = new_y
+        self.location = terrain_types[0] #Want to modify into fuller map where each pixel is a tile with a type
+                                         #Will do once zoom function implemented
+
+    def get_fighting_style(self):
+        if self.location == "forest":
+            self.fighting_style = "guerilla"
+
 class Unit:
     def __init__(self, x, y, hp, color, inv=None):
         self.x = x
@@ -74,8 +97,19 @@ class Unit:
         new_unit.hp = self.hp / 2
         self.hp = self.hp / 2
 
-b = Unit(300, 100, 4, "blue")
-a = Unit(400, 200, 2, "red")
+class Battle:
+    def __init__(self, x, y, location, parties = None):
+        self.x = x
+        self.y = y
+        self.location
+        self.parties = parties or []
+
+    def battle(self):
+        for party in parties:
+            party.hp -= 25
+
+b = Unit(300, 100, 50, "blue")
+a = Unit(400, 200, 50, "red")
 
 c = Noise(500, 500, 100.0, 6, 0.5, 2.0, 0)
 
