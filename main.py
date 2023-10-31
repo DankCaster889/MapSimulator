@@ -6,10 +6,19 @@ import random
 
 terrain_types = ['forest', 'desert', 'mountain', 'water']
 
+class Tile:
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+
 class Noise:
-    def __init__(self, width, height, scale, octaves, persistence, lacunarity, seed):
+    def __init__(self, width, height, canvas_width, canvas_height, tile_size, scale, octaves, persistence, lacunarity, seed):
         self.width = width
         self.height = height
+        self.canvas_width = canvas_width
+        self.canvas_height = canvas_height
+        self.tile_size = tile_size
         self.scale = scale
         self.octaves = octaves
         self.persistence = persistence
@@ -18,6 +27,7 @@ class Noise:
         self.map = None
         self.units = []
         self.markers = []
+        self.tiles = [[None for _ in range(width)] for _ in range(height)]
 
     def map_gen(self):
         topo_map = np.zeros((self.height, self.width))
@@ -35,6 +45,19 @@ class Noise:
                         base=self.seed)
         topo_map = (topo_map - np.min(topo_map)) / (np.max(topo_map) - np.min(topo_map))
         self.map = topo_map
+    
+    def create_tile_map(self):
+        tile_width = self.canvas_width // self.width
+        tile_height = self.canvas_height // self.height
+
+        for i in range(self.width):
+            for j in range(self.height):
+                value = self.map[i][j]
+                if value > 0.5:
+                    color = "green"
+                else:
+                    color = "blue"
+                self.tiles[i][j] = Tile(i*tile_width, j*tile_height, color)
 
     def add_marker(self, x, y, label):
         self.markers.append((x, y, label))
@@ -47,12 +70,14 @@ class Noise:
             unit.x = x
             unit.y = y
 
-    def show(self, canvas):
+    def show(self, canvas, zoom_x, zoom_y):
         canvas.delete("all")
         for i in range(self.width):
             for j in range(self.height):
-                color = f'#{int(self.map[i][j] * 255):02x}{int(self.map[i][j] * 255):02x}{int(self.map[i][j] * 255):02x}'
-                canvas.create_rectangle(i, j, i+1, j+1, fill=color, outline = "")
+                tile = self.tiles[i][j]
+                x = tile.x * self.tile_size
+                y = tile.y * self.tile_size
+                canvas.create_rectangle(x, y, x + self.tile_size, y + self.tile_size, fill=tile.color, outline = "")
             
             for marker in self.markers:
                 x, y, label = marker
@@ -111,15 +136,19 @@ class Battle:
 b = Unit(300, 100, 50, "blue")
 a = Unit(400, 200, 50, "red")
 
-c = Noise(500, 500, 100.0, 6, 0.5, 2.0, 0)
+canvas_width = 600
+canvas_height = 600
+tile_size = 9
+
+c = Noise(500, 500, canvas_width, canvas_height, tile_size, 100.0, 6, 0.5, 2.0, 0)
 
 def update_display():
-    c.show(canvas)
+    c.show(canvas, 150, 150)
 
 root = tk.Tk()
 root.title("Map")
 
-canvas = tk.Canvas(root, width=500, height=500)
+canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
 canvas.pack()
 
 print(a.hp)
@@ -129,10 +158,6 @@ b.divide(a)
 print(a.hp)
 print(b.hp)
 c.map_gen()
-c.add_unit(a)
-c.add_unit(b)
-c.add_marker(250, 200, "Base")
+c.create_tile_map()
 update_display()
 root.mainloop()
-
-
