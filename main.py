@@ -4,12 +4,16 @@ import matplotlib.pyplot as plt
 import noise
 import random
 
-terrain_types = ['forest', 'desert', 'mountain', 'water']
+terrain_types = {'forest':'green',
+                 'desert':'yellow', 
+                 'mountain':'gray',
+                 'ocean':'blue'}
 
 class Tile:
-    def __init__(self, x, y, color):
+    def __init__(self, x, y, type, color):
         self.x = x
         self.y = y
+        self.type = type
         self.color = color
 
 class Noise:
@@ -53,11 +57,13 @@ class Noise:
         for i in range(self.width):
             for j in range(self.height):
                 value = self.map[i][j]
-                if value > 0.5:
-                    color = "green"
+                if value > 0.6:
+                    type = "mountain"
+                elif value < 0.6 and value > 0.4:
+                    type = "forest"
                 else:
-                    color = "blue"
-                self.tiles[i][j] = Tile(i*tile_width, j*tile_height, color)
+                    type = "ocean"
+                self.tiles[i][j] = Tile(i*tile_width, j*tile_height, type, terrain_types[type])
 
     def add_marker(self, x, y, label):
         self.markers.append((x, y, label))
@@ -97,10 +103,10 @@ class Army:
         self.fighting_style = None
         self.size = len(troops)
 
-    def move(self, new_x, new_y):
+    def move(self, new_x, new_y, tile):
         self.x = new_x
         self.y = new_y
-        self.location = terrain_types[0] #Want to modify into fuller map where each pixel is a tile with a type
+        self.location = tile.type #Want to modify into fuller map where each pixel is a tile with a type
                                          #Will do once zoom function implemented
 
     def get_fighting_style(self):
