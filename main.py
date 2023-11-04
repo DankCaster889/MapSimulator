@@ -3,19 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import noise
 import random
+from tiles import *
 
+#dictionary of terrain and colors
 terrain_types = {'forest':'green',
                  'desert':'yellow', 
                  'mountain':'gray',
                  'ocean':'blue'}
 
-class Tile:
-    def __init__(self, x, y, type, color):
-        self.x = x
-        self.y = y
-        self.type = type
-        self.color = color
-
+#Noise which generates the base map
 class Noise:
     def __init__(self, width, height, canvas_width, canvas_height, tile_size, scale, octaves, persistence, lacunarity, seed):
         self.width = width
@@ -91,59 +87,13 @@ class Noise:
 
             for unit in self.units:
                 x, y, color = unit.x, unit.y, unit.color
-                canvas.create_rectangle(x - 10, y - 5, x + 10, y + 5, fill=color, outline = "")
+                canvas.create_rectangle(x - 10, y - 5, x + 10, y + 5, fill=color, outline = "black")
 
-class Army:
-    def __init__(self, x, y, name, troops = None):
-        self.x = x
-        self.y = y
-        self.name = name
-        self.troops = troops or []
-        self.location = None
-        self.fighting_style = None
-        self.size = len(troops)
+b = Unit(300, 100, 50, "blue", "Soldier")
+a = Unit(500, 500, 50, "red", "Soldier")
 
-    def move(self, new_x, new_y, tile):
-        self.x = new_x
-        self.y = new_y
-        self.location = tile.type #Want to modify into fuller map where each pixel is a tile with a type
-                                         #Will do once zoom function implemented
-
-    def get_fighting_style(self):
-        if self.location == "forest":
-            self.fighting_style = "guerilla"
-
-class Unit:
-    def __init__(self, x, y, hp, color, inv=None):
-        self.x = x
-        self.y = y
-        self.hp = hp
-        self.color = color
-        self.inv = inv or []
-
-    def combine(self, unit2):
-        self.hp += unit2.hp
-    
-    def divide(self, new_unit):
-        new_unit.hp = self.hp / 2
-        self.hp = self.hp / 2
-
-class Battle:
-    def __init__(self, x, y, location, parties = None):
-        self.x = x
-        self.y = y
-        self.location
-        self.parties = parties or []
-
-    def battle(self):
-        for party in parties:
-            party.hp -= 25
-
-b = Unit(300, 100, 50, "blue")
-a = Unit(400, 200, 50, "red")
-
-canvas_width = 600
-canvas_height = 600
+canvas_width = 800
+canvas_height = 800
 tile_size = 9
 
 c = Noise(500, 500, canvas_width, canvas_height, tile_size, 100.0, 6, 0.5, 2.0, 0)
@@ -157,12 +107,6 @@ root.title("Map")
 canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
 canvas.pack()
 
-print(a.hp)
-print(b.hp)
-b.combine(a)
-b.divide(a)
-print(a.hp)
-print(b.hp)
 c.map_gen()
 c.create_tile_map()
 update_display()
