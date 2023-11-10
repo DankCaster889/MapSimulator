@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import noise
 import random
 from tiles import *
+from units import *
 
 #dictionary of terrain and colors
 terrain_types = {'forest':'green',
@@ -25,8 +26,8 @@ class Noise:
         self.lacunarity = lacunarity
         self.seed = seed
         self.map = None
-        self.units = []
         self.markers = []
+        self.units = [[None for _ in range(width)] for _ in range(height)]
         self.tiles = [[None for _ in range(width)] for _ in range(height)]
 
     def map_gen(self):
@@ -65,7 +66,7 @@ class Noise:
         self.markers.append((x, y, label))
 
     def add_unit(self, unit):
-        self.units.append(unit)
+        self.units[unit.x][unit.y] = Unit(unit.x, unit.y, unit.type, unit.color, unit.name)
 
     def move_units(self, x, y):
         for unit in self.markers:
@@ -80,26 +81,31 @@ class Noise:
                 x = tile.x * self.tile_size
                 y = tile.y * self.tile_size
                 canvas.create_rectangle(x, y, x + self.tile_size, y + self.tile_size, fill=tile.color, outline = "")
-            
+                if i == 400 and j == 400:
+                    unit = self.units[i][j]
+                    z = unit.x * self.tile_size
+                    a = unit.y * self.tile_size
+                    canvas.create_rectangle(z, a, z + self.tile_size, a + self.tile_size, fill=unit.color, outline = "black")
+
+
             for marker in self.markers:
                 x, y, label = marker
                 canvas.create_text(x, y, text=label, fill="white", font=("Helvetica", 12))
 
-            for unit in self.units:
-                x, y, color = unit.x, unit.y, unit.color
-                canvas.create_rectangle(x - 10, y - 5, x + 10, y + 5, fill=color, outline = "black")
-
-b = Unit(300, 100, 50, "blue", "Soldier")
-a = Unit(500, 500, 50, "red", "Soldier")
-
 canvas_width = 800
 canvas_height = 800
-tile_size = 9
+tile_size = 3
 
-c = Noise(500, 500, canvas_width, canvas_height, tile_size, 100.0, 6, 0.5, 2.0, 0)
+a = Unit(400, 400, "Battalion", "red", "First Regiment")
+b = Infantry("Infantry", 1, 100)
+a.add_unit(b)
+
+c = Noise(800, 800, canvas_width, canvas_height, tile_size, 100.0, 6, 0.5, 2.0, 0)
+
+c.add_unit(a)
 
 def update_display():
-    c.show(canvas, 150, 150)
+    c.show(canvas, 500, 500)
 
 root = tk.Tk()
 root.title("Map")

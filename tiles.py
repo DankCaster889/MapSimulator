@@ -1,4 +1,3 @@
-
 class Tile:
     def __init__(self, x, y, type, color):
         self.x = x
@@ -12,14 +11,17 @@ class Unit(Tile):
         self.name = name
         self.composition = composition or []
 
+    def add_unit(self, unit):
+        self.composition.append(unit)
+
     def combine(self, unit2):
         for i in range(len(unit2.composition)):
-            self.composition.append[unit2.composition[i]]
+            self.composition.append(unit2.composition[i])
 
     def divide(self, factor, resulting_unit):
         new_unit = []
         for i in range((len(self.composition)/factor)):
-                new_unit.append[self.composition[i]]
+                new_unit.append(self.composition[i])
 
 class Battle(Tile):
     def __init__(self, x, y, type, color, units = None):
