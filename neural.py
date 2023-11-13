@@ -11,10 +11,10 @@ def sigmoid_deriv(x):
 #0; was_hit = false, 1; enemy_alive = True
 #alterations are probably neccesary
 binary_input = np.array([
-        [0], [1], [1],
+        [0, 0], [1, 1], [1, 0], [0, 1]
 ])
 
-binary_output = np.array([[0], [1], [1]])
+binary_output = np.array([[0], [0], [1], [0]])
 #the values here we can assign pretty much however we need
 #but we have to keep in mind how exactly we want to process
 #the information via binary
@@ -26,29 +26,35 @@ binary_output = np.array([[0], [1], [1]])
 class NeuralNet:
     def __init__(self, x, y):
         self.input = x #input                   #1 = num of features
-        self.weights1 = np.random.rand(self.input.shape[1], 3) #3 = num of outputs
+        self.weights1 = np.random.rand(self.input.shape[1], 16) #3 = num of outputs
         #line above assigns number of features and output layers
-        self.weights2 = np.random.rand(3, 4) # 3 input layers to 4 hidden layers
-        self.weights3 = np.random.rand(4, 1) # 4 hidden layers to 1 output layer
+        self.weights2 = np.random.rand(16, 8) # 16 input layers to 8 hidden layers
+        self.weights3 = np.random.rand(8, 3) # 8 hidden layers to 3 output layers
         self.y = y #output
         self.output = np.zeros((y.shape[0], 1)) #predicted output
 
     def feedforward(self):
         self.layer1 = sigmoid(np.dot(self.input, self.weights1))
-        self.output = sigmoid(np.dot(self.layer1, self.weights2))
+        self.layer2 = sigmoid(np.dot(self.layer1, self.weights2))
+        self.layer3 = sigmoid(np.dot(self.layer2, self.weights3))
+        self.output = self.layer3
         #I'm gonna be honest I'm not even sure if this code is doing anything
 
     def backprop(self):
-        d_weights2 = np.dot(self.layer1.T, (2 * (self.y - self.output)))
-        d_weights1 = np.dot(self.input.T, (np.dot(2 * (self.y - self.output) * sigmoid_deriv(self.output), self.weights2.T) * sigmoid_deriv(self.layer1)))
-        #trains the nodes off of the output layer against the predicted output
+        d_weights3 = np.dot(self.layer2.T, (2 * (self.y - self.output) * sigmoid_deriv(self.output)))
+        d_weights2 = np.dot(self.layer1.T, (np.dot(2 * (self.y - self.output) * sigmoid_deriv(self.output), self.weights3.T) * sigmoid_deriv(self.layer2)))
+        d_weights1 = np.dot(self.input.T, (np.dot(np.dot(2 * (self.y - self.output) * sigmoid_deriv(self.output), self.weights3.T) * sigmoid_deriv(self.layer2), self.weights2.T) * sigmoid_deriv(self.layer1)))
+        
+        self.weights3 += d_weights3
+        self.weights2 += d_weights2
+        self.weights1 += d_weights1
     
-    def train(self, X, y): #executes all of the training
-        self.output = np.zeros(y.shape)
+    def train(self, X, y, epochs=10000): #executes all of the training
         self.input = X
         self.y = y
-        self.feedforward()
-        self.backprop()
+        for epoch in range(epochs):
+            self.feedforward()
+            self.backprop()
 
     def test(self, input):
         pass
@@ -56,7 +62,8 @@ class NeuralNet:
         #so I can properly pass data through it
 
 nn = NeuralNet(binary_input, binary_output)
-print(nn.output)
-for i in range(10000):
-    nn.train(binary_input, binary_output)
-print(nn.output)
+nn.train(binary_input, binary_output, 10000)
+
+nn.feedforward()
+predictions = nn.output
+print(predictions)
