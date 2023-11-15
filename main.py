@@ -60,7 +60,9 @@ class Noise:
                     type = "forest"
                 else:
                     type = "ocean"
+                #right here is where we directly create the tile and place it in the grid
                 self.tiles[i][j] = Tile(i*tile_width, j*tile_height, type, terrain_types[type])
+                self.tiles[200][200] = Unit(200*tile_width, 200*tile_height, type, "red", "Infantry", [])
 
     def add_marker(self, x, y, label):
         self.markers.append((x, y, label))
@@ -73,6 +75,7 @@ class Noise:
             unit.x = x
             unit.y = y
 
+    #this is what displays the tile map onto the screen
     def show(self, canvas, zoom_x, zoom_y):
         canvas.delete("all")
         for i in range(self.width):
@@ -81,12 +84,6 @@ class Noise:
                 x = tile.x * self.tile_size
                 y = tile.y * self.tile_size
                 canvas.create_rectangle(x, y, x + self.tile_size, y + self.tile_size, fill=tile.color, outline = "")
-                if i == 400 and j == 400:
-                    unit = self.units[i][j]
-                    z = unit.x * self.tile_size
-                    a = unit.y * self.tile_size
-                    canvas.create_rectangle(z, a, z + self.tile_size, a + self.tile_size, fill=unit.color, outline = "black")
-
 
             for marker in self.markers:
                 x, y, label = marker
@@ -96,7 +93,7 @@ canvas_width = 800
 canvas_height = 800
 tile_size = 3
 
-a = Unit(400, 400, "Battalion", "red", "First Regiment")
+a = Unit(400, 200, "Battalion", "red", "First Regiment")
 b = Infantry("Infantry", 1, 100)
 a.add_unit(b)
 
@@ -105,7 +102,7 @@ c = Noise(800, 800, canvas_width, canvas_height, tile_size, 100.0, 6, 0.5, 2.0, 
 c.add_unit(a)
 
 def update_display():
-    c.show(canvas, 500, 500)
+    c.show(canvas, 800, 800)
 
 root = tk.Tk()
 root.title("Map")

@@ -9,27 +9,43 @@ def sigmoid_deriv(x):
 
 #input should be organized where each interger = checking a specific state
 #0; was_hit = false, 1; enemy_alive = True
-#alterations are probably neccesary
-binary_input = np.array([
-        [0, 0], [1, 1], [1, 0], [0, 1]
+
+default_input = np.array([
+        [0, 0], [0, 0], [0, 0], [0, 0]
+]) #default
+
+binary_input1 = np.array([
+        [0, 1], [1, 1], [1, 0], [0, 1]
+]) #defend
+
+binary_input2 = np.array([
+        [0, 0], [1, 1], [1, 1], [1, 1]
+]) #attack
+
+binary_input3 = np.array([
+        [1, 1], [1, 0], [1, 0], [0, 0]
+]) #run
+
+test_input = np.array([
+        [0, 0], [0, 1], [0, 0], [1, 1]
 ])
 
-binary_output = np.array([[0], [0], [1], [0]])
-#the values here we can assign pretty much however we need
-#but we have to keep in mind how exactly we want to process
-#the information via binary
+default_output = np.array([[0], [0], [0], [0]]) #all are 0
 
-#have now realized bigger issue,
-#this is one data set, we need thousands
-#to train it properly
+binary_output1 = np.array([[0], [1], [0], [0]]) #defend is 1
+
+binary_output2 = np.array([[1], [0], [0], [0]]) #attack is 1
+
+binary_output3 = np.array([[0], [0], [1], [0]]) #run is 1
+
+#fuck a training set, we will make do with 4 templates
 
 class NeuralNet:
     def __init__(self, x, y):
-        self.input = x #input                   #1 = num of features
-        self.weights1 = np.random.rand(self.input.shape[1], 16) #3 = num of outputs
-        #line above assigns number of features and output layers
+        self.input = x #input
+        self.weights1 = np.random.rand(self.input.shape[1], 16) #1 = num of features, 16 = num input layers
         self.weights2 = np.random.rand(16, 8) # 16 input layers to 8 hidden layers
-        self.weights3 = np.random.rand(8, 3) # 8 hidden layers to 3 output layers
+        self.weights3 = np.random.rand(8, 1) # 8 hidden layers to 3 output layers
         self.y = y #output
         self.output = np.zeros((y.shape[0], 1)) #predicted output
 
@@ -38,7 +54,6 @@ class NeuralNet:
         self.layer2 = sigmoid(np.dot(self.layer1, self.weights2))
         self.layer3 = sigmoid(np.dot(self.layer2, self.weights3))
         self.output = self.layer3
-        #I'm gonna be honest I'm not even sure if this code is doing anything
 
     def backprop(self):
         d_weights3 = np.dot(self.layer2.T, (2 * (self.y - self.output) * sigmoid_deriv(self.output)))
@@ -57,13 +72,19 @@ class NeuralNet:
             self.backprop()
 
     def test(self, input):
-        pass
-        #need to figure out what exactly is going on
-        #so I can properly pass data through it
+        layer1 = sigmoid(np.dot(input, self.weights1))
+        layer2 = sigmoid(np.dot(layer1, self.weights2))
+        layer3 = sigmoid(np.dot(layer2, self.weights3))
+        return layer3
 
-nn = NeuralNet(binary_input, binary_output)
-nn.train(binary_input, binary_output, 10000)
-
+#initializes, trains, reinforces the training, then provides output
+nn = NeuralNet(default_input, default_output)
+nn.train(binary_input1, binary_output1, 10000)
 nn.feedforward()
-predictions = nn.output
+nn.train(binary_input2, binary_output2, 10000)
+nn.feedforward()
+nn.train(binary_input3, binary_output3, 10000)
+nn.feedforward()
+print(test_input)
+predictions = nn.test(test_input)
 print(predictions)
