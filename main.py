@@ -62,7 +62,7 @@ class Noise:
                     type = "ocean"
                 #right here is where we directly create the tile and place it in the grid
                 self.tiles[i][j] = Tile(i*tile_width, j*tile_height, type, terrain_types[type])
-                self.tiles[200][200] = Unit(200*tile_width, 200*tile_height, type, "red", "Infantry", [])
+                #self.tiles[200][200] = Unit(200*tile_width, 200*tile_height, type, "red", "Infantry", [])
 
     def add_marker(self, x, y, label):
         self.markers.append((x, y, label))
