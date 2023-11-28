@@ -20,7 +20,7 @@ class Unit(Tile):
         self.composition = composition or []
     
     def heuristic(self, x1, y1, x2, y2):
-        return abs(x1 - x2) + (y1 - y2)
+        return abs(x1 - x2) + abs(y1 - y2)
 
     def add_unit(self, unit):
         self.composition.append(unit)
@@ -117,15 +117,15 @@ class Army(Unit):
             if current == (target_x, target_y):
                 return self.reconstruct_path(came_from, target_x, target_y)
 
-        open_set.remove(current)
-        for neighbor in self.get_neighbors(current, self.grid):
-            tentative_g_score = g_score[current] + 1
-            if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
-                came_from[neighbor] = current
-                g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = tentative_g_score + self.heuristic(neighbor[0], neighbor[1], target_x, target_y)
-                if neighbor not in open_set:
-                    open_set.append(neighbor)
+            open_set.remove(current)
+            for neighbor in self.get_neighbors(current):
+                tentative_g_score = g_score[current] + 1
+                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = tentative_g_score + self.heuristic(neighbor[0], neighbor[1], target_x, target_y)
+                    if neighbor not in open_set:
+                        open_set.append(neighbor)
 
         return None
 
