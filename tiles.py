@@ -18,6 +18,9 @@ class Unit(Tile):
         super().__init__(x, y, type, color)
         self.name = name
         self.composition = composition or []
+    
+    def heuristic(self, x1, y1, x2, y2):
+        return abs(x1 - x2) + (y1 - y2)
 
     def add_unit(self, unit):
         self.composition.append(unit)
@@ -37,12 +40,25 @@ class Army(Unit):
         super().__init__(x, y, type, color, name, composition)
         self.f_style = f_style
         self.location = location
+        self.grid = []
 
-    def place(self, new_x, new_y, tile):
+    def place(self, new_x, new_y, grid):
         self.x = new_x
         self.y = new_y
-        self.location = tile.type
-    
+        self.grid = grid
+
+    def update_location(self, grid):
+        if 0 <= self.x < len(grid) and 0 <= self.y < len(self.grid[0]):
+            self.location = self.grid[0][self.x][self.y]
+        else:
+            print("Invalid")
+
+    def get_neighbors(self, pos):
+        x, y = pos
+        neighbors = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1),
+                     (x - 1, y + 1), (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1)]
+        return [neighbor for neighbor in neighbors if 0 <= neighbor[0] < len(self.grid) and 0 <= neighbor[1] < len(self.grid[0]) and self.grid[neighbor[0]][neighbor[1]] == 0 ]
+
     def move(self, direction):
         if direction == "up":
             self.x += 1
@@ -84,6 +100,41 @@ class Army(Unit):
                 self.y -= 1
             else:
                 print("Incorrect input")
+    
+    def move_along_path(self, path):
+        for position in path:
+            self.x, self.y = position
+            self.place(self.x, self.y, self.grid)
+
+    def find_path(self, target_x, target_y):
+        open_set = [(self.x, self.y)]
+        came_from = {}
+        g_score = {(self.x, self.y): 0}
+        f_score = {(self.x, self.y): self.heuristic(self.x, self.y, target_x, target_y)}
+
+        while open_set:
+            current = min(open_set, key=lambda pos: f_score[pos])
+            if current == (target_x, target_y):
+                return self.reconstruct_path(came_from, target_x, target_y)
+
+        open_set.remove(current)
+        for neighbor in self.get_neighbors(current, self.grid):
+            tentative_g_score = g_score[current] + 1
+            if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                came_from[neighbor] = current
+                g_score[neighbor] = tentative_g_score
+                f_score[neighbor] = tentative_g_score + self.heuristic(neighbor[0], neighbor[1], target_x, target_y)
+                if neighbor not in open_set:
+                    open_set.append(neighbor)
+
+        return None
+
+    def reconstruct_path(self, came_from, target_x, target_y):
+        path = [(target_x, target_y)]
+        while (target_x, target_y) in came_from:
+            target_x, target_y = came_from[(target_x, target_y)]
+            path.append((target_x, target_y))
+        return path[::-1]
 
     def get_fighting_style(self):
         if self.location == "forest":
